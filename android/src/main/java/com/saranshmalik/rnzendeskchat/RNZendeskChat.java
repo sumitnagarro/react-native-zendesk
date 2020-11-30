@@ -20,6 +20,9 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 
 import java.lang.String;
+import java.util.List;
+import java.util.Arrays;
+import java.util.Locale;
 
 import javax.annotation.Nullable;
 import zendesk.chat.Chat;
@@ -104,11 +107,16 @@ public class RNZendeskChat extends ReactContextBaseJavaModule {
         String clientId = options.getString("clientId");
         String url = options.getString("url");
         String key = options.getString("key");
+        String language = options.getString("locale");
         Context context = appContext;
         Zendesk.INSTANCE.init(context, url, appId, clientId);
         Support.INSTANCE.init(Zendesk.INSTANCE);
         AnswerBot.INSTANCE.init(Zendesk.INSTANCE, Support.INSTANCE);
         Chat.INSTANCE.init(context, key);
+
+        //Device locale
+        Locale locale = new Locale(language);
+        Support.INSTANCE.setHelpCenterLocaleOverride(locale);
     }
 
     @ReactMethod
@@ -146,7 +154,20 @@ public class RNZendeskChat extends ReactContextBaseJavaModule {
               .show(activity, ViewArticleActivity.builder()
                                                  .withContactUsButtonVisible(false)
                                                  .config());
-        } else {
+        }else if (options.hasKey("withLabel")) {
+            String labels = options.getString("labels");
+            String [] labelsArray = labels.split(",");
+            if(labels.length() > 0){
+                HelpCenterActivity.builder()
+                    //.withEngines(ChatEngine.engine())
+                    .withLabelNames(labelsArray)
+                    .show(activity);
+            }else{
+                HelpCenterActivity.builder()
+                .show(activity);
+            }
+        }
+        else {
             HelpCenterActivity.builder()
              .show(activity);
         }

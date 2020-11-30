@@ -82,6 +82,9 @@ RCT_EXPORT_METHOD(init:(NSDictionary *)options) {
   [ZDKSupport initializeWithZendesk: [ZDKZendesk instance]];
   [ZDKAnswerBot initializeWithZendesk:[ZDKZendesk instance] support:[ZDKSupport instance]];
   [ZDKChat initializeWithAccountKey:options[@"key"] queue:dispatch_get_main_queue()];
+  
+  //Setting locale
+  [ZDKSupport instance].helpCenterLocaleOverride = options[@"locale"];
 }
 
 RCT_EXPORT_METHOD(initChat:(NSString *)key) {
@@ -120,6 +123,17 @@ RCT_EXPORT_METHOD(setNotificationToken:(NSData *)deviceToken) {
       engines = @[(id <ZDKEngine>) [ZDKChatEngine engineAndReturnError:&error]];
     }
     ZDKHelpCenterUiConfiguration* helpCenterUiConfig = [ZDKHelpCenterUiConfiguration new];
+    //Adding labels, check with label
+    if (options[@"labels"]) {
+      NSString *labels = options[@"labels"];
+      //ToDo seperate csv values and pass in set labels
+      NSArray *labelsList = [labels componentsSeparatedByString:@","];
+
+      //ToDo pass it in set labels to achieve what is at line 133
+      [helpCenterUiConfig setLabels:@labelsList];
+      //[helpCenterUiConfig setLabels:@[@"ios", @"xcode"]];
+    }
+    
     helpCenterUiConfig.objcEngines = engines;
     ZDKArticleUiConfiguration* articleUiConfig = [ZDKArticleUiConfiguration new];
     articleUiConfig.objcEngines = engines;
@@ -127,6 +141,11 @@ RCT_EXPORT_METHOD(setNotificationToken:(NSData *)deviceToken) {
          helpCenterUiConfig.showContactOptions = NO;
          articleUiConfig.showContactOptions = NO;
     }
+
+    //     ZDKHelpCenterUiConfiguration * hcConfig = [ZDKHelpCenterUiConfiguration new];
+    // [hcConfig setLabels:@[@"ios", @"xcode"]];
+    // UIViewController *helpCenter = [ZDKHelpCenterUi buildHelpCenterOverviewUiWithConfigs:@[configs]];
+    // [self.navigationController pushViewController:helpCenter animated:YES];
     UIViewController* controller = [ZDKHelpCenterUi buildHelpCenterOverviewUiWithConfigs: @[helpCenterUiConfig, articleUiConfig]];
     // controller.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle: @"Close"
     //                                                                                    style: UIBarButtonItemStylePlain
